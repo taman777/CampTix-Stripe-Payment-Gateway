@@ -6,8 +6,8 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	public $description = 'Stripe';
 
 	// See https://support.stripe.com/questions/which-currencies-does-stripe-support
-	// Only testing with AUD and USD though.
-	public $supported_currencies = array( 'AUD', 'USD' );
+	// Only testing with AUD and USD though.  // Add JPY.
+	public $supported_currencies = array( 'AUD', 'USD', 'JPY' );
 
 	public $supported_features = array(
 		'refund-single' => true,
@@ -65,9 +65,8 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 			'public_key'  => $this->options['api_public_key'],
 			'name'        => $this->camptix_options['event_name'],
 			'description' => trim( $description ),
-			'amount'      => (int) $camptix->order['total'] * 100,
+			'amount' => ( $this->camptix_options['currency'] == 'JPY' ? (int)$camptix->order['total'] : (int)$camptix->order['total'] * 100 ),
 			'currency'    => $this->camptix_options['currency'],
-
 			'token'       => !empty( $_POST['tix_stripe_token'] ) ? wp_unslash( $_POST['tix_stripe_token'] ) : '',
 			'receipt_email' => !empty( $_POST['tix_stripe_reciept_email'] ) ? wp_unslash( $_POST['tix_stripe_reciept_email'] ) : '',
 		) );
@@ -277,7 +276,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 			$statement_descriptor = $camptix->substr_bytes( strip_tags( $this->camptix_options['event_name'] ), 0, 22 );
 
 			$charge = \Stripe\Charge::create( array(
-				'amount'        => $camptix->order['total'] * 100,
+				'amount' => ( $this->camptix_options['currency'] == 'JPY' ? (int)$camptix->order['total'] : (int)$camptix->order['total'] * 100 ),
 				'currency'      => $this->camptix_options['currency'],
 				'description'   => $this->camptix_options['event_name'],
 				'statement_descriptor' => $statement_descriptor,
